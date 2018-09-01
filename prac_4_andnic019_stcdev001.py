@@ -34,6 +34,26 @@ GPIO.setup(CS, GPIO.OUT)
 
 mcp = Adafruit_MCP3008.MCP3008(clk=CLK, cs=CS, mosi=MOSI, miso=MISO)
 
+# handle reset button presses
+def reset_pushed(channel):
+    print("Reset pushed")
+GPIO.add_event_detect(resetpin, GPIO.RISING, reset_pushed, delay);
+
+# handle freq button presses
+def freq_pushed(channel):
+    print("Frequency pushed")
+GPIO.add_event_detect(freqpin, GPIO.RISING, freq_pushed, delay);
+
+# handle stop button presses
+def stop_pushed(channel):
+    print("Stop pushed")
+GPIO.add_event_detect(stoppin, GPIO.RISING, stop_pushed, delay);
+
+# handle display button presses
+def display_pushed(channel):
+    print("Display pushed")
+GPIO.add_event_detect(displaypin, GPIO.RISING, display_pushed, delay);
+
 #try-finally block to handle GPIO cleanup and robust termination
 try:
     # print header line
