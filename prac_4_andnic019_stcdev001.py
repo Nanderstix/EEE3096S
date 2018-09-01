@@ -45,11 +45,11 @@ GPIO.add_event_detect(resetpin, GPIO.RISING, reset_pushed, delay);
 
 # handle freq button presses
 def freq_pushed(channel):
-    print("Frequency pushed")
-    index = freq_arr.index(time_delay)
-    if (index==2): index=0    
-    else: index +=1
-    time_delay = freq_arr[index]
+	print("Frequency pushed")
+	index = freq_arr.index(time_delay) 
+	if (index==2): index=0  
+	else: index +=1 
+	time_delay = freq_arr[index] # iterate to next delay value
 GPIO.add_event_detect(freqpin, GPIO.RISING, freq_pushed, delay);
 
 # handle stop button presses
@@ -78,10 +78,10 @@ try:
         
         # convert raw values to meaningful output numbers
         current_ticks = time.time() # current number of seconds since 1978
-	timer_seconds = round(current_ticks - time_start) # value of timer 
+		timer_seconds = round(current_ticks - time_start) # value of timer 
         timer = str(datetime.timedelta(seconds=timer_seconds)) # Convert seconds to correct format
-	actualtime = datetime.datetime.fromtimestamp(current_ticks).strftime('%H:%M:%S') # Get the current device time
-	tempvolt = 3.3*(tempraw/1023)# convert raw value to voltage for use in formula
+		actualtime = datetime.datetime.fromtimestamp(current_ticks).strftime('%H:%M:%S') # Get the current device time
+		tempvolt = 3.3*(tempraw/1023)# convert raw value to voltage for use in formula
         temp = (tempvolt-0.5)/(0.01)
         light = 100*(lightraw/lightmax)
         pot = 3.3*(potraw/1023) 
@@ -89,7 +89,7 @@ try:
         # Display values
         print ('{:10}{:10}{:3} V {:02.0f} C {:3}%'.format(actualtime, timer, pot, temp, light))
         time_corrector = (time.time()-time_start)%time_delay # account for function run time.
-	time.sleep(time_delay-time_corrector) # delay for time delay value
+		time.sleep(time_delay-time_corrector) # delay for time delay value
         
 finally:
     GPIO.cleanup()
