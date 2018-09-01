@@ -65,7 +65,7 @@ GPIO.add_event_detect(displaypin, GPIO.RISING, display_pushed, delay);
 #try-finally block to handle GPIO cleanup and robust termination
 try:
     # print header line
-    print ('{:10}{:10}{:6}{:6}{:6}'.format("Time", "Timer", "Pot", "Temp", "Light"))
+    print ('{:10}{:10}{:8}{:8}{:8}'.format("Time", "Timer", "Pot", "Temp", "Light"))
     
     #loop for programme execution    
     while True: # make the code run until an exception is thrown
@@ -78,18 +78,19 @@ try:
         
         # convert raw values to meaningful output numbers
         current_ticks = time.time() # current number of seconds since 1978
-		timer_seconds = round(current_ticks - time_start) # value of timer 
+        timer_seconds = round(current_ticks - time_start) # value of timer
+	
         timer = str(datetime.timedelta(seconds=timer_seconds)) # Convert seconds to correct format
-		actualtime = datetime.datetime.fromtimestamp(current_ticks).strftime('%H:%M:%S') # Get the current device time
-		tempvolt = 3.3*(tempraw/1023)# convert raw value to voltage for use in formula
+        actualtime = datetime.datetime.fromtimestamp(current_ticks).strftime('%H:%M:%S') # Get the current device time
+        tempvolt = 3.3*(tempraw/1023) # convert raw value to voltage for use in formula
         temp = (tempvolt-0.5)/(0.01)
         light = 100*(lightraw/lightmax)
         pot = 3.3*(potraw/1023) 
         
         # Display values
-        print ('{:10}{:10}{:3} V {:02.0f} C {:3}%'.format(actualtime, timer, pot, temp, light))
+        print ('{:10}{:6}{:6.1f} V {:4.0f} C {:4.0f}%'.format(actualtime, timer, pot, temp, light))
         time_corrector = (time.time()-time_start)%time_delay # account for function run time.
-		time.sleep(time_delay-time_corrector) # delay for time delay value
+        time.sleep(time_delay-time_corrector) # delay for time delay value
         
 finally:
     GPIO.cleanup()
