@@ -46,6 +46,7 @@ GPIO.add_event_detect(resetpin, GPIO.RISING, reset_pushed, delay);
 # handle freq button presses
 def freq_pushed(channel):
 	print("Frequency pushed")
+	global time_delay
 	index = freq_arr.index(time_delay) 
 	if (index==2): index=0  
 	else: index +=1 
@@ -90,7 +91,7 @@ try:
         # Display values
         print ('{:10}{:6}{:6.1f} V {:4.0f} C {:4.0f}%'.format(actualtime, timer, pot, temp, light))
         time_corrector = (time.time()-time_start)%time_delay # account for function run time.
-        time.sleep(time_delay-time_corrector) # delay for time delay value
-        
+        time.sleep(time_delay-time_corrector) # delay for time delay value       
+
 finally:
     GPIO.cleanup()
