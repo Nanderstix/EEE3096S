@@ -15,6 +15,7 @@ lightmax = 898 # maximum expected LDR value
 time_start = time.time() # reference time to calculate timer value
 freq_arr = [0.5,1,2] # array of delay time values in seconds
 time_delay = 0.5 # default delay is 500ms
+started = True
 
 # set pin names
 resetpin = 19
@@ -45,17 +46,20 @@ GPIO.add_event_detect(resetpin, GPIO.RISING, reset_pushed, delay);
 
 # handle freq button presses
 def freq_pushed(channel):
-	print("Frequency pushed")
-	global time_delay
-	index = freq_arr.index(time_delay) 
-	if (index==2): index=0  
-	else: index +=1 
-	time_delay = freq_arr[index] # iterate to next delay value
+    global time_delay
+    index = freq_arr.index(time_delay) 
+    if (index==2): index=0  
+    else: index +=1 
+    time_delay = freq_arr[index] # iterate to next delay value
+    print("Frequency pushed")
+    print("Time delay = " + str(time_delay) + "s")
 GPIO.add_event_detect(freqpin, GPIO.RISING, freq_pushed, delay);
 
 # handle stop button presses
 def stop_pushed(channel):
-    print("Stop pushed")
+    print("Stop/Start pushed")
+    global started
+    started = not(started)
 GPIO.add_event_detect(stoppin, GPIO.RISING, stop_pushed, delay);
 
 # handle display button presses
@@ -70,28 +74,31 @@ try:
     
     #loop for programme execution    
     while True: # make the code run until an exception is thrown
-        #foo = 0 #for use with empty programme loop (pure button control)
-        
-        # read MCP raw input values
-        tempraw = mcp.read_adc(0)
-        lightraw = mcp.read_adc(1)
-        potraw = mcp.read_adc(2)
-        
-        # convert raw values to meaningful output numbers
-        current_ticks = time.time() # current number of seconds since 1978
-        timer_seconds = round(current_ticks - time_start) # value of timer
-	
-        timer = str(datetime.timedelta(seconds=timer_seconds)) # Convert seconds to correct format
-        actualtime = datetime.datetime.fromtimestamp(current_ticks).strftime('%H:%M:%S') # Get the current device time
-        tempvolt = 3.3*(tempraw/1023) # convert raw value to voltage for use in formula
-        temp = (tempvolt-0.5)/(0.01)
-        light = 100*(lightraw/lightmax)
-        pot = 3.3*(potraw/1023) 
-        
-        # Display values
-        print ('{:10}{:6}{:6.1f} V {:4.0f} C {:4.0f}%'.format(actualtime, timer, pot, temp, light))
-        time_corrector = (time.time()-time_start)%time_delay # account for function run time.
-        time.sleep(time_delay-time_corrector) # delay for time delay value       
+        if (started):
+            #foo = 0 #for use with empty programme loop (pure button control)
+            
+            # read MCP raw input values
+            tempraw = mcp.read_adc(0)
+            lightraw = mcp.read_adc(1)
+            potraw = mcp.read_adc(2)
+            
+            # convert raw values to meaningful output numbers
+            current_ticks = time.time() # current number of seconds since 1978
+            timer_seconds = round(current_ticks - time_start) # value of timer
+            
+            timer = str(datetime.timedelta(seconds=timer_seconds)) # Convert seconds to correct format
+            actualtime = datetime.datetime.fromtimestamp(current_ticks).strftime('%H:%M:%S') # Get the current device time
+            tempvolt = 3.3*(tempraw/1023) # convert raw value to voltage for use in formula
+            temp = (tempvolt-0.5)/(0.01)
+            light = 100*(lightraw/lightmax)
+            pot = 3.3*(potraw/1023) 
+            
+            # Display values
+            print ('{:10}{:6}{:6.1f} V {:4.0f} C {:4.0f}%'.format(actualtime, timer, pot, temp, light))
+            time_corrector = (time.time()-time_start)%time_delay # account for function run time.
+            time.sleep(time_delay-time_corrector) # delay for time delay value
+        else:
+            foo = 0
 
 finally:
     GPIO.cleanup()
