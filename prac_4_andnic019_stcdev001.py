@@ -13,8 +13,8 @@ GPIO.setmode(GPIO.BCM) # use GPIO pin numbering
 delay = 300 # button debounce time
 lightmax = 898 # maximum expected LDR value
 time_start = time.time() # reference time to calculate timer value
-freq_arr = [0.5,1,2] # array of delay time values in seconds
-time_delay = 0.5 # default delay is 500ms
+global freq_arr = [0.5,1,2] # array of delay time values in seconds
+global time_delay = 0.5 # default delay is 500ms
 
 # set pin names
 resetpin = 19
