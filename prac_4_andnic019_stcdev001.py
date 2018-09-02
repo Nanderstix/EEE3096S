@@ -3,6 +3,7 @@
 
 import RPi.GPIO as GPIO
 import time
+import datetime
 import Adafruit_MCP3008
 import os
 GPIO.setwarnings(False)
@@ -11,6 +12,9 @@ GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM) # use GPIO pin numbering
 delay = 300 # button debounce time
 lightmax = 898 # maximum expected LDR value
+time_start = time.time() # reference time to calculate timer value
+freq_arr = [0.5,1,2] # array of delay time values in seconds
+time_delay = 0.5 # default delay is 500ms
 
 # set pin names
 resetpin = 19
@@ -41,7 +45,11 @@ GPIO.add_event_detect(resetpin, GPIO.RISING, reset_pushed, delay);
 
 # handle freq button presses
 def freq_pushed(channel):
-    print("Frequency pushed")
+	print("Frequency pushed")
+	index = freq_arr.index(time_delay) 
+	if (index==2): index=0  
+	else: index +=1 
+	time_delay = freq_arr[index] # iterate to next delay value
 GPIO.add_event_detect(freqpin, GPIO.RISING, freq_pushed, delay);
 
 # handle stop button presses
@@ -57,7 +65,7 @@ GPIO.add_event_detect(displaypin, GPIO.RISING, display_pushed, delay);
 #try-finally block to handle GPIO cleanup and robust termination
 try:
     # print header line
-    print ("Time \t Timer \t Pot \t Temp \t Light")
+    print ('{:10}{:10}{:8}{:8}{:8}'.format("Time", "Timer", "Pot", "Temp", "Light"))
     
     #loop for programme execution    
     while True: # make the code run until an exception is thrown
@@ -69,16 +77,20 @@ try:
         potraw = mcp.read_adc(2)
         
         # convert raw values to meaningful output numbers
-        actualtime = 0
-        timer = 0
-        tempvolt = 3.3*(tempraw/1023)# convert raw value to voltage for use in formula
+        current_ticks = time.time() # current number of seconds since 1978
+        timer_seconds = round(current_ticks - time_start) # value of timer
+	
+        timer = str(datetime.timedelta(seconds=timer_seconds)) # Convert seconds to correct format
+        actualtime = datetime.datetime.fromtimestamp(current_ticks).strftime('%H:%M:%S') # Get the current device time
+        tempvolt = 3.3*(tempraw/1023) # convert raw value to voltage for use in formula
         temp = (tempvolt-0.5)/(0.01)
         light = 100*(lightraw/lightmax)
-        pot = 3.3*(potraw/1023)
+        pot = 3.3*(potraw/1023) 
         
         # Display values
-        print ("%d \t %d \t %.1f V \t %.0f C \t %.0f%%" % (actualtime, timer, pot, temp, light))
-        time.sleep(0.5) # delay for a half second
+        print ('{:10}{:6}{:6.1f} V {:4.0f} C {:4.0f}%'.format(actualtime, timer, pot, temp, light))
+        time_corrector = (time.time()-time_start)%time_delay # account for function run time.
+        time.sleep(time_delay-time_corrector) # delay for time delay value
         
 finally:
     GPIO.cleanup()
