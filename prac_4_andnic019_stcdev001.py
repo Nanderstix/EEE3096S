@@ -41,6 +41,9 @@ mcp = Adafruit_MCP3008.MCP3008(clk=CLK, cs=CS, mosi=MOSI, miso=MISO)
 
 # handle reset button presses
 def reset_pushed(channel):
+    global time_start
+    time_start = time.time() # reset time of timer
+    print("\033c", end='') #clears the console, but only when running from terminal. No way to clear IDE shell
     print("Reset pushed")
 GPIO.add_event_detect(resetpin, GPIO.RISING, reset_pushed, delay);
 
