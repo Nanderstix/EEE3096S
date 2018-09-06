@@ -11,13 +11,14 @@ GPIO.setwarnings(False)
 # init variables & constants
 GPIO.setmode(GPIO.BCM) # use GPIO pin numbering
 delay = 300 # button debounce time
-lightmax = 898 # maximum expected LDR value
+lightmax = 1000 # maximum expected LDR value
 time_start = time.time() # reference time to calculate timer value
 freq_arr = [0.5,1,2] # array of delay time values in seconds
 time_delay = 0.5 # default delay is 500ms
 started = True
 stoppedcount = 0
 stoppedcache = ""
+first_run = 1
 
 # set pin names
 resetpin = 19
@@ -44,7 +45,9 @@ mcp = Adafruit_MCP3008.MCP3008(clk=CLK, cs=CS, mosi=MOSI, miso=MISO)
 # handle reset button presses
 def reset_pushed(channel):
     global time_start
+    global first_run
     time_start = time.time() # reset time of timer
+    first_run = 1
     print("\033c", end='') #clears the console, but only when running from terminal. No way to clear IDE shell
     print("Reset pushed")
     # print header line
@@ -90,11 +93,18 @@ def getreadings():
     lightraw = mcp.read_adc(1)
     potraw = mcp.read_adc(2)
     
+    # Comment
+    global first_run
+    global time_start
+    if (first_run):
+        time_start = time.time()
+        first_run = 0
+    
     # convert raw values to meaningful output numbers
     current_ticks = time.time() # current number of seconds since 1978
-    timer_seconds = round(current_ticks - time_start) # value of timer
+    timer_seconds = current_ticks - time_start # value of timer
     
-    timer = str(datetime.timedelta(seconds=timer_seconds)) # Convert seconds to correct format
+    timer = datetime.datetime.fromtimestamp(timer_seconds-7200).strftime('%H:%M:%S.%f')[:-5] # Convert seconds to correct format
     actualtime = datetime.datetime.fromtimestamp(current_ticks).strftime('%H:%M:%S') # Get the current device time
     tempvolt = 3.3*(tempraw/1023) # convert raw value to voltage for use in formula
     temp = (tempvolt-0.5)/(0.01)
